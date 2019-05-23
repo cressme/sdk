@@ -175,34 +175,41 @@
   
  ### 6、 ** callback list**
   * LovenseScanCallBack(): scan callback
-    * void foundDevice(Toy device);
-    * void finishScaning();
-    * void onError(String msg);
+    ```java
+      void foundDevice(Toy device);
+      void finishScaning();
+      void onError(String msg);
+    ```
     <br/>
   * LovenseConnectCallBack(): conect callback
-    * void onConnected(String address); // 连接成功回调
-    * void onError(String msg); // 连接错误回调
-    * void onServiceDiscover(String address); // 服务准备完成回调
+    ```java
+      void onConnected(String address); // 连接成功回调
+      void onError(String msg); // 连接错误回调
+      void onServiceDiscover(String address); // 服务准备完成回调
+    ```
      <br/>
   * LovenseDisConnectCallBack(): disConect callback
-    * void disConnected(String address, int status); // 断开连接回调
+     ```java
+      void disConnected(String address, int status); // 断开连接回调
+     ```
     <br/>
   * LovenseCommandCallBack(): command callback
-    * void notify(String address, String uuid, boolean started); // Notification state changed!   true:Start Notify state  false:Stop Notify state
-    * void writeResult(String address, int status); // 命令发送完成回调
-    * void requestFailed(String address, int ordinal);// 命令发送请求失败
-    * void onConnectionStateChange(String address, int status, int newState); // 连接状态变更回调  status:0 成功执行连接操作  newState 当前设备的连接状态，0 设备已断开 1:设备正在连接 2：设备已连接 3：设备正在断开
-    * void onResultToyData(String address,Toy toy); // 玩具参数回调
-    * void onResultBattery(String address, int battery); //电量回调
-    * void onResultAidLightStatus(String address, Integer status); // 辅助灯状态回调
-    * void onResultLightStatus(String address, Integer status); // 指示灯状态回调
-    * void notifityToyCharacteristic(String address, String value); // 其他信息回调
-    * void onOrderNotificationSuccess(String success); // 指令发送成功回调
-    * void onOrderNotificationError(String error); // 指令错误（无法识别）回调
-    * void onGetAllExistedProgramSuccess(String programs); // 获取指令列表成功回调
-    * void onResultMoveWaggleSuccess(String msg); // 震动信息回调
-    * void onError(String msg); // 错误信息回调
- 
+     ```java
+      void notify(String address, String uuid, boolean started); // Notification state changed!   true:Start Notify state  false:Stop Notify state
+      void writeResult(String address, int status); // 命令发送完成回调
+      void requestFailed(String address, int ordinal);// 命令发送请求失败
+      void onConnectionStateChange(String address, int status, int newState); // 连接状态变更回调  status:0 成功执行连接操作  newState 当前设备的连接状态，0 设备已断开 1:设备正在连接 2：设备已连接 3：设备正在断开
+      void onResultToyData(String address,Toy toy); // 玩具参数回调
+      void onResultBattery(String address, int battery); //电量回调
+      void onResultAidLightStatus(String address, Integer status); // 辅助灯状态回调
+      void onResultLightStatus(String address, Integer status); // 指示灯状态回调
+      void notifityToyCharacteristic(String address, String value); // 其他信息回调
+      void onOrderNotificationSuccess(String success); // 指令发送成功回调
+      void onOrderNotificationError(String error); // 指令错误（无法识别）回调
+      void onGetAllExistedProgramSuccess(String programs); // 获取指令列表成功回调
+      void onResultMoveWaggleSuccess(String msg); // 震动信息回调
+      void onError(String msg); // 错误信息回调
+    ```
  ### 7、 ** entity class **
    * Toy 玩具类，记录玩具所有属性（如玩具名称，玩具类型等）
      ```java
