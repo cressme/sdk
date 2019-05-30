@@ -85,8 +85,8 @@
                 });
   ```
    * add toy message or command Callback
-     ```java
-      Lovense.getInstance(this).setBtCharacteristicListener(toyId, new LovenseCommandCallBack() {
+      ```java
+       Lovense.getInstance(this).setBtCharacteristicListener(toyId, new LovenseCommandCallBack() {
             @Override
             public void notify(String toyId, String uuid, boolean started) { }
             
@@ -130,7 +130,7 @@
             public void onError(String msg) { }
         });
 
-  ```
+       ```
   * Search the toys over Bluetooth
     ```java
         Lovense.getInstance(getApplication()).scanDevice(true);
