@@ -28,23 +28,19 @@
  ```java
  public class MyApplication extends Application {
 
-    public  static LovenseSDK lovenseSDK;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        lovenseSDK = LovenseSDK.getInstance();
-        lovenseSDK.init(this);
-        // Pass your token into Lovense framework
-        lovenseSDK.setDeveloperToken("YOU TOKEN");
+        Lovense.getInstance(this).setDeveloperToken("YOU TOKEN");
     }
 }
    ```
 * add scan success notification
  ```java
- MyApplication.lovenseSDK.setLovenseScaListener(new LovenseScanCallBack() {
+  Lovense.getInstance(this).setLovenseScaListener(new LovenseScanCallBack() {
             @Override
-            public void foundDevice(Toy device) {
+            public void foundDevice(Toy toy) {
 
             }
 
@@ -61,9 +57,9 @@
    ```
   * add connect success notification
  ```java
-  lovenseSDK.requestConnect(address, new LovenseConnectCallBack() {
+    Lovense.getInstance(this).requestConnect(toyId, new LovenseConnectCallBack() {
             @Override
-            public void onConnected(String address) {
+            public void onConnected(String toyId) {
 
             }
 
@@ -73,7 +69,7 @@
             }
 
             @Override
-            public void onServiceDiscover(String address) {
+            public void onServiceDiscover(String toyId) {
 
             }
         });
@@ -81,46 +77,45 @@
      * add connect success notification
   * add disconnect success notification
   ```java
-    lovenseSDK.disconnect(address, new LovenseDisConnectCallBack() {
+     Lovense.getInstance(this).disconnect(toyId, new LovenseDisConnectCallBack() {
                     @Override
-                    public void disConnected(String address, int status) {
+                    public void disConnected(String toyId, int status) {
                        
                     }
                 });
   ```
    * add toy message or command Callback
-  ```java
-
-        lovenseSDK.setBtCharacteristicListener(address, new LovenseCommandCallBack() {
+     ```java
+      Lovense.getInstance(this).setBtCharacteristicListener(toyId, new LovenseCommandCallBack() {
             @Override
-            public void notify(String address, String uuid, boolean started) { }
+            public void notify(String toyId, String uuid, boolean started) { }
             
             @Override
-            public void writeResult(String address, int status) { }
+            public void writeResult(String toyId, int status) { }
 
             @Override
             public void requestFailed(String address, int ordinal) { }
             
             @Override
-            public void onConnectionStateChange(String address, int status, int newState) { }
+            public void onConnectionStateChange(String toyId, int status, int newState) { }
 
             @Override
-            public void onResultToyData(String address, Toy toy) { }
+            public void onResultToyData(String toyId, Toy toy) { }
 
             @Override
-            public void onResultBattery(String address, int battery) { }
+            public void onResultBattery(String toyId, int battery) { }
 
             @Override
-            public void onResultAidLightStatus(String address, Integer status) { }
+            public void onResultAidLightStatus(String toyId, Integer status) { }
 
             @Override
-            public void onResultLightStatus(String address, Integer status) { }
+            public void onResultLightStatus(String toyId, Integer status) { }
 
             @Override
-            public void notifityToyCharacteristic(String address, String value) { }
+            public void notifityToyCharacteristic(String toyId, String value) { }
 
             @Override
-            public void onOrderNotificationSuccess(String address) { }
+            public void onOrderNotificationSuccess(String toyId) { }
 
             @Override
             public void onOrderNotificationError(String error) { }
@@ -138,40 +133,82 @@
   ```
   * Search the toys over Bluetooth
     ```java
-     MyApplication.lovenseSDK.scanDevice(true);
+        Lovense.getInstance(getApplication()).scanDevice(true);
     ```
  * stop scan the toys 
     ```java
-       MyApplication.lovenseSDK.scanDevice(false);
+        Lovense.getInstance(getApplication()).scanDevice(false);
     ```
  * Connect the toy
    ```java
-        lovenseSDK.requestConnect(address,new LovenseConnectCallBack());
+         Lovense.getInstance(getApplication()).requestConnect(address,new LovenseConnectCallBack());
     ```
  * Disconnect the toy
     ```java
-       lovenseSDK.disconnect(address, new LovenseDisConnectCallBack());
+         Lovense.getInstance(getApplication()).disconnect(address, new LovenseDisConnectCallBack());
+    ```
+ *  Send a command to the toy
+    ```java
+         Lovense.getInstance(getApplication()).sendCommand(toyId,LovenseToy.COMMAND_VIBRATE,vibrateLevel);
     ```
     
  ### 5、 ** command method list **
-    * getDeviceType(String address); Get device/toy information
-    * getBattery(String address) ; Get battery status
-    * commVibrate(String address, int parameter); Vibrate the toy .The parameter must be between 0 and 20!
-    * flash(String address); Flash the light 3 times
-    * rotate(String address, int n); Rotate the toy .The parameter must be between 0 and 20!
-    * rotateTrue(String address, int n); Rotate clockwise .The parameter must be between 0 and 20!
-    * rotateFalse(String address, int n); Rotate anti-clockwise .The parameter must be between 0 and 20!
-    * rotateChange(String address); Change the rotation direction!
-    * vibrate1(String address, int parameter); Activate the first vibrator at level n .The parameter must be between 0 and 20!
-    * vibrate2(String address, int parameter); Activate the second vibrator at level n .The parameter must be between 0 and 20!
-    * aLightOff(String address); Turn off the AID light (saved permanently)
-    * aLightOn(String address);  Turn on the AID light (saved permanently)
-    * getAlight(String address); Get the AID light status (1: on, 0:off)
-    * lightOff(String address);  Turn off the light (saved permanently)
-    * lightOn(String address);   Turn on the light (saved permanently)
-    * getLight(String address);  Get the light status (1: on, 0:off)
-    * startMoveWaggle(String address); Start tracking the toy movement (0-4)
-    * endMoveWaggle(String address); Stop tracking the toy movement
+  `COMMAND_VIBRATE`
+  `-Vibrate the toy .The parameter must be between 0 and 20!`
+
+  `COMMAND_ROTATE`
+  `-Rotate the toy .The parameter must be between 0 and 20!`
+
+  `COMMAND_ROTATE_CLOCKWISE`
+  `-Rotate clockwise .The parameter must be between 0 and 20!`
+
+  `COMMAND_ROTATE_ANTI_CLOCKWISE`
+  `-Rotate anti-clockwise .The parameter must be between 0 and 20!`
+
+  `COMMAND_ROTATE_CHANGE`
+  `-Change the rotation direction`
+
+  `COMMAND_VIBRATE1`
+  `-Activate the first vibrator at level n .The parameter must be between 0 and 20!`
+
+  `COMMAND_VIBRATE2`
+  `-Activate the second vibrator at level n .The parameter must be between 0 and 20!`
+
+  `COMMAND_VIBRATE_FLASH`
+  `-Vibrate the toy at level n, and flash the light at the same time .The parameter must be between 0 and 20!`
+
+  `COMMAND_FLASH`
+  `-Flash the light 3 times`
+
+  `COMMAND_LIGHT_OFF`
+  `-Turn off the light (saved permanently)`
+
+  `COMMAND_LIGHT_ON`
+  `-Turn on the light (saved permanently)`
+
+  `COMMAND_GET_LIGHT_STATUS`
+  `-Get the light status (1: on, 0:off)`
+
+  `COMMAND_ALIGHT_OFF`
+  `-Turn off the AID light (saved permanently)`
+
+  `COMMAND_ALIGHT_ON`
+  `-Turn on the AID light (saved permanently)`
+
+  `COMMAND_GET_ALIGHT_STATUS`
+  `-Get the AID light status (1: on, 0:off)`
+
+  `COMMAND_GET_BATTERY`
+  `-Get battery status`
+
+  `COMMAND_GET_DEVICE_TYPE`
+  `-Get device/toy information`
+
+  `COMMAND_START_MOVE`
+  `-Start tracking the toy movement (0-4)`
+
+  `COMMAND_STOP_MOVE`
+  `-Stop tracking the toy movement`
   
  ### 6、 ** callback list**
   * LovenseScanCallBack(): scan callback
@@ -195,25 +232,25 @@
     <br/>
   * LovenseCommandCallBack(): command callback
      ```java
-      void notify(String address, String uuid, boolean started); // Notification state changed!   true:Start Notify state  false:Stop Notify state
-      void writeResult(String address, int status); // 命令发送完成回调
-      void requestFailed(String address, int ordinal);// 命令发送请求失败
+      void notify(String toyId, String uuid, boolean started); // Notification state changed!   true:Start Notify state  false:Stop Notify state
+      void writeResult(String toyId, int status); // 命令发送完成回调
+      void requestFailed(String toyId, int ordinal);// 命令发送请求失败
       void onConnectionStateChange(String address, int status, int newState); // 连接状态变更回调  status:0 成功执行连接操作  newState 当前设备的连接状态，0 设备已断开 1:设备正在连接 2：设备已连接 3：设备正在断开
-      void onResultToyData(String address,Toy toy); // 玩具参数回调
-      void onResultBattery(String address, int battery); //电量回调
-      void onResultAidLightStatus(String address, Integer status); // 辅助灯状态回调
-      void onResultLightStatus(String address, Integer status); // 指示灯状态回调
-      void notifityToyCharacteristic(String address, String value); // 其他信息回调
-      void onOrderNotificationSuccess(String success); // 指令发送成功回调
+      void onResultToyData(String toyId,Toy toy); // 玩具参数回调
+      void onResultBattery(String toyId, int battery); //电量回调
+      void onResultAidLightStatus(String toyId, Integer status); // 辅助灯状态回调
+      void onResultLightStatus(String toyId, Integer status); // 指示灯状态回调
+      void notifityToyCharacteristic(String toyId, String value); // 其他信息回调
+      void onOrderNotificationSuccess(String toyId); // 指令发送成功回调
       void onOrderNotificationError(String error); // 指令错误（无法识别）回调
       void onGetAllExistedProgramSuccess(String programs); // 获取指令列表成功回调
       void onResultMoveWaggleSuccess(String msg); // 震动信息回调
       void onError(String msg); // 错误信息回调
     ```
  ### 7、 ** entity class **
-   * Toy 玩具类，记录玩具所有属性（如玩具名称，玩具类型等）
+   * LovnseToy 玩具类，记录玩具所有属性（如玩具名称，玩具类型等）
      ```java
-      private String address; // toy address
+      private String toyId; // toy id
 
       private Integer version; // toy version
 
