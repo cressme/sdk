@@ -38,9 +38,9 @@
    ```
 * add scan success notification
  ```java
-  Lovense.getInstance(this).setLovenseScaListener(new LovenseScanCallBack() {
+  Lovense.getInstance(this).setSearchToyListener(new OnSearchToyListener() {
             @Override
-            public void foundDevice(Toy toy) {
+            public void onSearchToy(LovenseToy toy) {
 
             }
 
@@ -57,7 +57,7 @@
    ```
   * add connect success notification
  ```java
-    Lovense.getInstance(this).requestConnect(toyId, new LovenseConnectCallBack() {
+    Lovense.getInstance(this).connectToy(toyId, new OnConnectListener() {
             @Override
             public void onConnected(String toyId) {
 
@@ -77,7 +77,7 @@
      * add connect success notification
   * add disconnect success notification
   ```java
-     Lovense.getInstance(this).disconnect(toyId, new LovenseDisConnectCallBack() {
+     Lovense.getInstance(this).disconnect(toyId, new OnDisConnectListener() {
                     @Override
                     public void disConnected(String toyId, int status) {
                        
@@ -86,7 +86,7 @@
   ```
    * add toy message or command Callback
       ```java
-       Lovense.getInstance(this).setBtCharacteristicListener(toyId, new LovenseCommandCallBack() {
+       Lovense.getInstance(this).setSendCommandListener(toyId, new OnSendCommandListener() {
             @Override
             public void notify(String toyId, String uuid, boolean started) { }
             
