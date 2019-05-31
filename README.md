@@ -55,8 +55,8 @@
             }
         });
      ```
-  * add connect success notification
- ```java
+ * add connect success notification
+   ```java
     Lovense.getInstance(this).connectToy(toyId, new OnConnectListener() {
             @Override
             public void onConnected(String toyId) { // 连接成功回调
@@ -73,9 +73,9 @@
 
             }
         });
-     ```
+      ```
  
-   * add toy message or command Callback
+* add toy message or command Callback
      ```java
         Lovense.getInstance(this).setSendCommandListener(toyId, new OnSendCommandListener() {
        
@@ -125,7 +125,7 @@
         });
 
    ```
-  * Search the toys over Bluetooth
+ * Search the toys over Bluetooth
     ```java
         Lovense.getInstance(getApplication()).searchToys(true);
     ```
