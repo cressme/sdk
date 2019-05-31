@@ -24,21 +24,13 @@
     ```
     
 ### 4、Connect Lovense Toys
- * initialization sdk in you application and pass your token into Lovense framework
+ * Pass your token into Lovense class in your Activity
    ```java
-     public class MyApplication extends Application {
-
-
-       @Override
-       public void onCreate() {
-          super.onCreate();
-          Lovense.getInstance(this).setDeveloperToken("YOU TOKEN");
-        }
-      }
+     Lovense.getInstance(getApplication()).setDeveloperToken("YOU TOKEN");
     ```
 * add scan success notification
   ```java
-    Lovense.getInstance(this).setSearchToyListener(new OnSearchToyListener() {
+    Lovense.getInstance(getApplication()).setSearchToyListener(new OnSearchToyListener() {
             @Override
             public void onSearchToy(LovenseToy toy) {  // 找到设备回调
 
@@ -57,7 +49,7 @@
      ```
  * add connect success notification
    ```java
-    Lovense.getInstance(this).connectToy(toyId, new OnConnectListener() {
+    Lovense.getInstance(getApplication()).connectToy(toyId, new OnConnectListener() {
             @Override
             public void onConnected(String toyId) { // 连接成功回调
 
@@ -77,7 +69,7 @@
  
 * add toy message or command Callback
      ```java
-        Lovense.getInstance(this).setSendCommandListener(toyId, new OnSendCommandListener() {
+        Lovense.getInstance(getApplication()).setSendCommandListener(toyId, new OnSendCommandListener() {
        
             // Notification state changed!   true:Start Notify state  false:Stop Notify state
             @Override
