@@ -87,7 +87,7 @@
             public void writeResult(String toyId, int status) { }  // 命令发送完成回调
 
             @Override
-            public void requestFailed(String address, int ordinal) { } // 命令发送请求失败
+            public void requestFailed(String toyId, int ordinal) { } // 命令发送请求失败
             
              // 连接状态变更回调 status:0 成功执行连接操作 newState 当前设备的连接状态，0 设备已断开 1:设备正在连接 2：设备已连接 3：设备正在断开
             @Override
@@ -127,11 +127,11 @@
    ```
   * Search the toys over Bluetooth
     ```java
-        Lovense.getInstance(getApplication()).scanDevice(true);
+        Lovense.getInstance(getApplication()).searchToys(true);
     ```
  * stop Search the toys 
     ```java
-        Lovense.getInstance(getApplication()).scanDevice(false);
+        Lovense.getInstance(getApplication()).searchToys(false);
     ```
  * Save the toys
     ```java
@@ -143,11 +143,11 @@
     ```
  * Connect the toy
    ```java
-         Lovense.getInstance(getApplication()).requestConnect(address,new OnConnectListener());
+         Lovense.getInstance(getApplication()).connectToy(toyId,new OnConnectListener());
     ```
  * Disconnect the toy
     ```java
-         Lovense.getInstance(getApplication()).disconnect(address);
+         Lovense.getInstance(getApplication()).disconnect(toyId);
     ```
  *  Send a command to the toy
     ```java
