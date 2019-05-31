@@ -1,25 +1,25 @@
 package com.lovense.sdkdemo;
 
 /**
- * Created  on 2019/5/16 13:58
+ *  Created by Lovense on 2019/5/14
  *
- * @author zyy
+ *  Copyright © 2019 Hytto. All rights reserved.
  */
 public class ToyConnectEvent {
     private int connect;
-    private String address;
+    private String id;
 
-    public ToyConnectEvent(int connect, String address) {
+    public ToyConnectEvent(int connect, String id) {
         this.connect = connect;
-        this.address = address;
+        this.id = id;
     }
 
-    public String getAddress() {
-        return address;
+    public String getId() {
+        return id;
     }
 
-    public void setAddress(String address) {
-        this.address = address;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public int getConnect() {

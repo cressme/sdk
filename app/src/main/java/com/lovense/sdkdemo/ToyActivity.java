@@ -6,34 +6,34 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.lovense.sdklibrary.Toy;
-import com.lovense.sdklibrary.callBack.LovenseCommandCallBack;
-import com.lovense.sdklibrary.callBack.LovenseConnectCallBack;
-import com.lovense.sdklibrary.callBack.LovenseDisConnectCallBack;
+import com.lovense.sdklibrary.Lovense;
+import com.lovense.sdklibrary.LovenseToy;
+import com.lovense.sdklibrary.callBack.LovenseError;
+import com.lovense.sdklibrary.callBack.OnConnectListener;
+import com.lovense.sdklibrary.callBack.OnSendCommandListener;
 
 import org.greenrobot.eventbus.EventBus;
 
-import static com.lovense.sdkdemo.MyApplication.lovenseSDK;
 
 /**
- * Created  on 2019/5/14 09:17
+ *  Created by Lovense on 2019/5/14
  *
- * @author zyy
+ *  Copyright © 2019 Hytto. All rights reserved.
  */
 public class ToyActivity extends AppCompatActivity implements View.OnClickListener {
 
     protected TextView tvType, tvAddress, tvVersion, tvBattery,tvMovement;
 
-    private String address;
+    private String toyId;
     private View back,stopConnect;
-    private LovenseConnectCallBack lovenseConnectCallBack;
-    private EditText etProgram;
+    private OnConnectListener onConnectListener;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -53,20 +53,21 @@ public class ToyActivity extends AppCompatActivity implements View.OnClickListen
         tvVersion = findViewById(R.id.tv_version);
         tvBattery = findViewById(R.id.tv_battery);
         tvMovement = findViewById(R.id.tv_movement);
-        address = intent.getStringExtra("address");
+        toyId = intent.getStringExtra("toyId");
 
-        if (!lovenseSDK.isConnected(address)){
-            lovenseConnectCallBack = new LovenseConnectCallBack() {
+        if (!Lovense.getInstance(getApplication()).isConnected(toyId)){
+            onConnectListener = new OnConnectListener() {
 
                 @Override
-                public void onConnected(String address) {
-                    EventBus.getDefault().post(new ToyConnectEvent(1, address));
+                public void onConnected(String toyId) {
+                    EventBus.getDefault().post(new ToyConnectEvent(1, toyId));
                 }
 
 
                 @Override
-                public void onError(String msg) {
+                public void onError(LovenseError error) {
                     try {
+                        String msg = error.getMessage();
                         Toast.makeText(ToyActivity.this, msg, Toast.LENGTH_SHORT).show();
                         final AlertDialog.Builder normalDialog =
                                 new AlertDialog.Builder(ToyActivity.this);
@@ -85,10 +86,9 @@ public class ToyActivity extends AppCompatActivity implements View.OnClickListen
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
                                         //...To-do
-                                        lovenseSDK.requestConnect(address, lovenseConnectCallBack);
+                                        Lovense.getInstance(getApplication()).connectToy(toyId, onConnectListener);
                                     }
                                 });
-                        // 显示
                         normalDialog.show();
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -96,72 +96,72 @@ public class ToyActivity extends AppCompatActivity implements View.OnClickListen
                 }
 
                 @Override
-                public void onServiceDiscover(String address) {
-                    lovenseSDK.getDeviceType(address);
-                    lovenseSDK.getBattery(address);
-                    lovenseSDK.getBattery(address);
+                public void onServiceDiscover(String toyId) {
+                    Lovense.getInstance(getApplication()).sendCommand(toyId,LovenseToy.COMMAND_GET_DEVICE_TYPE );
+                    Lovense.getInstance(getApplication()).sendCommand(toyId,LovenseToy.COMMAND_GET_BATTERY  );
                 }
             };
-            lovenseSDK.requestConnect(address, lovenseConnectCallBack);
+            Lovense.getInstance(getApplication()).connectToy(toyId, onConnectListener);
         }else {
-            lovenseSDK.getDeviceType(address);
-            lovenseSDK.getBattery(address);
-            lovenseSDK.getBattery(address);
+            Lovense.getInstance(getApplication()).sendCommand(toyId,LovenseToy.COMMAND_GET_DEVICE_TYPE );
+            Lovense.getInstance(getApplication()).sendCommand(toyId,LovenseToy.COMMAND_GET_BATTERY  );
         }
 
-        lovenseSDK.setBtCharacteristicListener(address, new LovenseCommandCallBack() {
-            @Override
-            public void notify(String address, String uuid, boolean started) {
-
-            }
+        Lovense.getInstance(getApplication()).setSendCommandListener(toyId, new OnSendCommandListener() {
 
 
             @Override
-            public void writeResult(String address, int status) {
+            public void notify(String toyId, String uuid, boolean started) {
 
             }
 
             @Override
-            public void requestFailed(String address, int ordinal) {
+            public void writeResult(String toyId, int status) {
+                Log.e("test", "writeResult: "+status);
+            }
+
+            @Override
+            public void requestFailed(String toyId, int ordinal) {
                 Toast.makeText(ToyActivity.this, "request failed!", Toast.LENGTH_SHORT).show();
             }
 
 
             @Override
-            public void onConnectionStateChange(String address, int status, int newState) {
-                EventBus.getDefault().post(new ToyConnectEvent(newState,address));
+            public void onConnectionStateChange(String toyId, int status, int newState) {
+                Log.e("test", "onConnectionStateChange: "+newState);
+                EventBus.getDefault().post(new ToyConnectEvent(newState,toyId));
             }
 
             @Override
-            public void onResultToyData(String address, Toy toy) {
-                tvType.setText("Device Info："+toy.getType());
-                tvAddress.setText("MAC Address："+toy.getMacAddress());
-                tvVersion.setText("Version："+toy.getVersion());
+            public void onResultToyData(String toyId, LovenseToy lovenseToy) {
+                tvType.setText("Device Info："+ lovenseToy.getType());
+                tvAddress.setText("MAC Address："+ lovenseToy.getMacAddress());
+                tvVersion.setText("Version："+ lovenseToy.getVersion());
             }
 
             @Override
-            public void onResultBattery(String address, int battery) {
+            public void onResultBattery(String toyId, int battery) {
                 tvBattery.setText("Battery："+battery+"%");
             }
 
             @Override
-            public void onResultAidLightStatus(String address, Integer status) {
+            public void onResultAidLightStatus(String toyId, Integer status) {
                 Toast.makeText(ToyActivity.this, status==1?"AID Light on":"AID Light off", Toast.LENGTH_SHORT).show();
             }
 
             @Override
-            public void onResultLightStatus(String address, Integer status) {
+            public void onResultLightStatus(String toyId, Integer status) {
                 Toast.makeText(ToyActivity.this, status==1?"Light on":"Light off", Toast.LENGTH_SHORT).show();
             }
 
             @Override
-            public void notifityToyCharacteristic(String address, String value) {
+            public void notifityToyCharacteristic(String toyId, String value) {
 
             }
 
             @Override
-            public void onOrderNotificationSuccess(String address) {
-//                Toast.makeText(ToyActivity.this, address, Toast.LENGTH_SHORT).show();
+            public void onOrderNotificationSuccess(String msg) {
+                Log.e("test", "onOrderNotificationSuccess: "+msg);
             }
 
             @Override
@@ -181,20 +181,16 @@ public class ToyActivity extends AppCompatActivity implements View.OnClickListen
             }
 
             @Override
-            public void onError(String msg) {
-                Toast.makeText(ToyActivity.this, msg, Toast.LENGTH_SHORT).show();
+            public void onError(LovenseError error) {
+                Toast.makeText(ToyActivity.this, error.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
 
         stopConnect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                lovenseSDK.disconnect(address, new LovenseDisConnectCallBack() {
-                    @Override
-                    public void disConnected(String address, int status) {
-                        EventBus.getDefault().post(new ToyConnectEvent(status,address));
-                    }
-                });
+                Lovense.getInstance(getApplication()).disconnect(toyId);
+                EventBus.getDefault().post(new ToyConnectEvent(-1,toyId));
             }
         });
 
@@ -207,11 +203,12 @@ public class ToyActivity extends AppCompatActivity implements View.OnClickListen
 
 
 
+
         SeekBar commVibrate = findViewById(R.id.comm_vibrate);
         commVibrate.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                lovenseSDK.commVibrate(address, progress);
+                Lovense.getInstance(getApplication()).sendCommand(toyId,LovenseToy.COMMAND_VIBRATE   ,progress);
             }
 
             @Override
@@ -230,7 +227,7 @@ public class ToyActivity extends AppCompatActivity implements View.OnClickListen
         noraRotate.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                lovenseSDK.rotate(address, progress);
+                Lovense.getInstance(getApplication()).sendCommand(toyId,LovenseToy.COMMAND_ROTATE  ,progress);
             }
 
             @Override
@@ -248,7 +245,7 @@ public class ToyActivity extends AppCompatActivity implements View.OnClickListen
         noraRotateTrue.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                lovenseSDK.rotateTrue(address, progress);
+                Lovense.getInstance(getApplication()).sendCommand(toyId,LovenseToy.COMMAND_ROTATE_CLOCKWISE ,progress);
             }
 
             @Override
@@ -266,7 +263,7 @@ public class ToyActivity extends AppCompatActivity implements View.OnClickListen
         noraRotateFalse.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                lovenseSDK.rotateFalse(address, progress);
+                Lovense.getInstance(getApplication()).sendCommand(toyId,LovenseToy.COMMAND_ROTATE_ANTI_CLOCKWISE ,progress);
             }
 
             @Override
@@ -283,11 +280,12 @@ public class ToyActivity extends AppCompatActivity implements View.OnClickListen
 
 
 
+
         SeekBar edgeVibrate1 = findViewById(R.id.edge_vibrate1);
         edgeVibrate1.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                lovenseSDK.vibrate1(address, progress);
+                Lovense.getInstance(getApplication()).sendCommand(toyId,LovenseToy.COMMAND_VIBRATE1 ,progress);
             }
 
             @Override
@@ -305,7 +303,7 @@ public class ToyActivity extends AppCompatActivity implements View.OnClickListen
         edgeVibrate2.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                lovenseSDK.vibrate2(address, progress);
+                Lovense.getInstance(getApplication()).sendCommand(toyId,LovenseToy.COMMAND_VIBRATE2 ,progress);
             }
 
             @Override
@@ -336,34 +334,33 @@ public class ToyActivity extends AppCompatActivity implements View.OnClickListen
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.tv_flash:
-                lovenseSDK.flash(address);
-                lovenseSDK.getDeviceType(address);
+                Lovense.getInstance(getApplication()).sendCommand(toyId,LovenseToy.COMMAND_FLASH);
                 break;
             case R.id.tv_rotate_change:
-                lovenseSDK.rotateChange(address);
+                Lovense.getInstance(getApplication()).sendCommand(toyId,LovenseToy.COMMAND_ROTATE_CHANGE);
                 break;
             case R.id.tv_alight_off:
-                lovenseSDK.aLightOff(address);
+                Lovense.getInstance(getApplication()).sendCommand(toyId,LovenseToy.COMMAND_ALIGHT_OFF);
                 break;
             case R.id.tv_alight_on:
-                lovenseSDK.aLightOn(address);
+                Lovense.getInstance(getApplication()).sendCommand(toyId,LovenseToy.COMMAND_ALIGHT_ON);
                 break;
             case R.id.tv_get_alight:
-                lovenseSDK.getAlight(address);
+                Lovense.getInstance(getApplication()).sendCommand(toyId,LovenseToy.COMMAND_GET_ALIGHT_STATUS);
                 break;
             case R.id.tv_light_off:
-                lovenseSDK.lightOff(address);
+                Lovense.getInstance(getApplication()).sendCommand(toyId,LovenseToy.COMMAND_LIGHT_OFF);
                 break;
             case R.id.tv_light_on:
-                lovenseSDK.lightOn(address);
+                Lovense.getInstance(getApplication()).sendCommand(toyId,LovenseToy.COMMAND_LIGHT_ON);
                 break;
             case R.id.tv_start_move_waggle:
                 tvMovement.setText("Movement:0");
-                lovenseSDK.startMoveWaggle(address);
+                Lovense.getInstance(getApplication()).sendCommand(toyId,LovenseToy.COMMAND_START_MOVE);
                 break;
             case R.id.tv_stop_move_waggle:
                 tvMovement.setText("");
-                lovenseSDK.endMoveWaggle(address);
+                Lovense.getInstance(getApplication()).sendCommand(toyId,LovenseToy.COMMAND_STOP_MOVE);
                 break;
         }
     }

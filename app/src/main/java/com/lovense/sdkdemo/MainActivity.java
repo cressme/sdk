@@ -14,8 +14,11 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.lovense.sdklibrary.Toy;
-import com.lovense.sdklibrary.callBack.LovenseScanCallBack;
+import com.lovense.sdklibrary.Lovense;
+import com.lovense.sdklibrary.LovenseToy;
+import com.lovense.sdklibrary.callBack.LovenseError;
+import com.lovense.sdklibrary.callBack.OnErrorListener;
+import com.lovense.sdklibrary.callBack.OnSearchToyListener;
 import com.tbruyelle.rxpermissions2.RxPermissions;
 
 import org.greenrobot.eventbus.EventBus;
@@ -25,6 +28,11 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ *  Created by Lovense on 2019/5/14
+ *
+ *  Copyright © 2019 Hytto. All rights reserved.
+ */
 public class MainActivity extends AppCompatActivity {
 
     private View start;
@@ -33,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
 
     private RxPermissions rxPermissions;
 
-    List<Toy> toys = new ArrayList<>();
+    List<LovenseToy> lovenseToys = new ArrayList<>();
     private ToyAdapter toyAdapter;
 
     @Override
@@ -47,25 +55,30 @@ public class MainActivity extends AppCompatActivity {
         recyclerView = ((RecyclerView) findViewById(R.id.recyler_view));
 
         LinearLayoutManager manager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
-        toyAdapter = new ToyAdapter(this, toys);
+        toyAdapter = new ToyAdapter(this, lovenseToys);
         recyclerView.setLayoutManager(manager);
         recyclerView.setAdapter(toyAdapter);
 
-        MyApplication.lovenseSDK.setLovenseScaListener(new LovenseScanCallBack() {
+        Lovense.getInstance(getApplication()).setSearchToyListener(new OnSearchToyListener() {
             @Override
-            public void foundDevice(Toy device) {
-                addDevice(device);
+            public void onSearchToy(LovenseToy lovenseToy) {
+                addDevice(lovenseToy);
             }
 
             @Override
-            public void finishScaning() {
-//                Toast.makeText(MainActivity.this, "扫描结束！", Toast.LENGTH_SHORT).show();
+            public void finishSearch() {
+                Lovense.getInstance(getApplication()).saveToys(lovenseToys, new OnErrorListener() {
+                    @Override
+                    public void onError(LovenseError error) {
+
+                    }
+                });
                 title.setText("search toy(stop scan)");
             }
 
             @Override
-            public void onError(String msg) {
-                Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
+            public void onError(LovenseError msg) {
+                Toast.makeText(MainActivity.this, msg.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -79,17 +92,30 @@ public class MainActivity extends AppCompatActivity {
         stop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MyApplication.lovenseSDK.scanDevice(false);
+                Lovense.getInstance(getApplication()).searchToys(false);
             }
         });
+
+        title.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                List<LovenseToy> lovenseToys = Lovense.getInstance(getApplication()).listToys(new OnErrorListener() {
+                    @Override
+                    public void onError(LovenseError error) {
+
+                    }
+                });
+            }
+        });
+
     }
 
     private void scanDev() {
-        toys.clear();
+        lovenseToys.clear();
         toyAdapter.notifyDataSetChanged();
         Toast.makeText(MainActivity.this, "start scan！", Toast.LENGTH_SHORT).show();
         title.setText("search toy(scaning)");
-        MyApplication.lovenseSDK.scanDevice(true);
+        Lovense.getInstance(getApplication()).searchToys(true);
     }
 
 
@@ -117,22 +143,20 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void addDevice(Toy toy) {
-        if (toy != null) {
-            if (!isAdded(toy)) {
-                toys.add(toy);
+    private void addDevice(LovenseToy lovenseToy) {
+        if (lovenseToy != null) {
+            if (!isAdded(lovenseToy)) {
+                lovenseToys.add(lovenseToy);
                 toyAdapter.notifyDataSetChanged();
-                //lovenseSDK.requestConnect(device.getAddress());
             }
         }
     }
 
-    protected boolean isAdded(Toy toy) {
-        for (Toy t:toys) {
-            String address = t.getAddress();
-            String toyAddress = toy.getAddress();
-            Log.e("scan 7", "scanDevice: " + address+"  2:"+toyAddress  );
-            if (!TextUtils.isEmpty(address) && address.equals(toyAddress)) {
+    protected boolean isAdded(LovenseToy lovenseToy) {
+        for (LovenseToy t: lovenseToys) {
+            String  id = t.getToyId();
+            String toyId = lovenseToy.getToyId();
+            if (!TextUtils.isEmpty(id) && id.equals(toyId)) {
                 return true;
             }
         }
@@ -143,12 +167,12 @@ public class MainActivity extends AppCompatActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEvent(ToyConnectEvent mToyConnectEvent) {
-        String address = mToyConnectEvent.getAddress();
+        String id = mToyConnectEvent.getId();
         int connect = mToyConnectEvent.getConnect();
-        for (int i = 0; i < toys.size(); i++) {
-            Toy toy = toys.get(i);
-            if (toy.getAddress().equals(address)){
-                toy.setStatus(connect);
+        for (int i = 0; i < lovenseToys.size(); i++) {
+            LovenseToy lovenseToy = lovenseToys.get(i);
+            if (lovenseToy.getToyId().equals(id)){
+                lovenseToy.setStatus(connect);
                 toyAdapter.notifyItemChanged(i);
                 break;
             }

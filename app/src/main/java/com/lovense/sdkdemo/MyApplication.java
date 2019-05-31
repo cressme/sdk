@@ -2,22 +2,18 @@ package com.lovense.sdkdemo;
 
 import android.app.Application;
 
-import com.lovense.sdklibrary.LovenseSDK;
+import com.lovense.sdklibrary.Lovense;
 
 /**
- * Created  on 2019/4/29 17:06
+ *  Created by Lovense on 2019/5/14
  *
- * @author zyy
+ *  Copyright © 2019 Hytto. All rights reserved.
  */
 public class MyApplication extends Application {
-
-    public  static LovenseSDK lovenseSDK;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        lovenseSDK = LovenseSDK.getInstance();
-        lovenseSDK.init(this);
-        lovenseSDK.setDeveloperToken("YOU TOKEN");
+       Lovense.getInstance(this).setDeveloperToken("You Token");
     }
 }

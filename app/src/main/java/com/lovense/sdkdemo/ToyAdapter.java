@@ -10,23 +10,23 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.lovense.sdklibrary.Toy;
+import com.lovense.sdklibrary.LovenseToy;
 
 import java.util.List;
 
 /**
- * Created  on 2019/5/13 17:54
+ *  Created by Lovense on 2019/5/14
  *
- * @author zyy
+ *  Copyright © 2019 Hytto. All rights reserved.
  */
 public class ToyAdapter extends RecyclerView.Adapter<ToyAdapter.ViewHolder> {
 
     Context context;
-    List<Toy> toyList ;
+    List<LovenseToy> lovenseToyList;
 
-    public ToyAdapter(Context context, List<Toy> toyList) {
+    public ToyAdapter(Context context, List<LovenseToy> lovenseToyList) {
         this.context = context;
-        this.toyList = toyList;
+        this.lovenseToyList = lovenseToyList;
     }
 
     @NonNull
@@ -39,18 +39,18 @@ public class ToyAdapter extends RecyclerView.Adapter<ToyAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int i) {
-        final Toy toy = toyList.get(i);
-        viewHolder.name.setText("name："+toy.getDeviceName());
-        viewHolder.id.setText("ID："+toy.getUuid());
-        viewHolder.rssi.setText("RSSI："+toy.getRssi());
-        // 0 设备已断开 1:设备正在连接 2：设备已连接 3：设备正在断开
-        viewHolder.status.setText("status："+(toy.getStatus()==1?"connected":"not connected"));
+        final LovenseToy lovenseToy = lovenseToyList.get(i);
+        viewHolder.name.setText("name："+ lovenseToy.getDeviceName());
+        viewHolder.id.setText("ID："+ lovenseToy.getUuid());
+        viewHolder.rssi.setText("RSSI："+ lovenseToy.getRssi());
+        // 0: toy has disconnected  1:toy is connecting  2：toy has connected   3：toy is disconnecting
+        viewHolder.status.setText("status："+(lovenseToy.getStatus()==1?"connected":"not connected"));
 
         viewHolder.ll.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(context, ToyActivity.class);
-                intent.putExtra("address",toy.getAddress());
+                intent.putExtra("toyId", lovenseToy.getToyId());
                 context.startActivity(intent);
             }
         });
@@ -60,7 +60,7 @@ public class ToyAdapter extends RecyclerView.Adapter<ToyAdapter.ViewHolder> {
 
     @Override
     public int getItemCount() {
-        return toyList.size();
+        return lovenseToyList.size();
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
