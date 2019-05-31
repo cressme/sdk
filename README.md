@@ -24,128 +24,130 @@
     ```
     
 ### 4、Connect Lovense Toys
-* initialization sdk in you application and pass your token into Lovense framework
- ```java
- public class MyApplication extends Application {
+ * initialization sdk in you application and pass your token into Lovense framework
+   ```java
+     public class MyApplication extends Application {
 
 
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        Lovense.getInstance(this).setDeveloperToken("YOU TOKEN");
-    }
-}
-   ```
+       @Override
+       public void onCreate() {
+          super.onCreate();
+          Lovense.getInstance(this).setDeveloperToken("YOU TOKEN");
+        }
+      }
+    ```
 * add scan success notification
- ```java
-  Lovense.getInstance(this).setSearchToyListener(new OnSearchToyListener() {
+  ```java
+    Lovense.getInstance(this).setSearchToyListener(new OnSearchToyListener() {
             @Override
-            public void onSearchToy(LovenseToy toy) {
+            public void onSearchToy(LovenseToy toy) {  // 找到设备回调
 
             }
 
             @Override
-            public void finishScaning() {
+            public void finishScaning() {  // 扫描结束回调
 
             }
 
             @Override
-            public void onError(String msg) {
+            public void onError(LovenseError lovenseError) { // 错误回调
 
             }
         });
-   ```
+     ```
   * add connect success notification
  ```java
     Lovense.getInstance(this).connectToy(toyId, new OnConnectListener() {
             @Override
-            public void onConnected(String toyId) {
+            public void onConnected(String toyId) { // 连接成功回调
 
             }
 
             @Override
-            public void onError(String msg) {
+            public void onError(LovenseError lovenseError) { // 连接错误回调
 
             }
 
             @Override
-            public void onServiceDiscover(String toyId) {
+            public void onServiceDiscover(String toyId) { // 服务准备完成回调
 
             }
         });
-   ```
-     * add connect success notification
-  * add disconnect success notification
-  ```java
-     Lovense.getInstance(this).disconnect(toyId, new OnDisConnectListener() {
-                    @Override
-                    public void disConnected(String toyId, int status) {
-                       
-                    }
-                });
-  ```
+     ```
+ 
    * add toy message or command Callback
-      ```java
-       Lovense.getInstance(this).setSendCommandListener(toyId, new OnSendCommandListener() {
+     ```java
+        Lovense.getInstance(this).setSendCommandListener(toyId, new OnSendCommandListener() {
+       
+            // Notification state changed!   true:Start Notify state  false:Stop Notify state
             @Override
-            public void notify(String toyId, String uuid, boolean started) { }
+            public void notify(String toyId, String uuid, boolean started) { } 
             
             @Override
-            public void writeResult(String toyId, int status) { }
+            public void writeResult(String toyId, int status) { }  // 命令发送完成回调
 
             @Override
-            public void requestFailed(String address, int ordinal) { }
+            public void requestFailed(String address, int ordinal) { } // 命令发送请求失败
             
+             // 连接状态变更回调 status:0 成功执行连接操作 newState 当前设备的连接状态，0 设备已断开 1:设备正在连接 2：设备已连接 3：设备正在断开
             @Override
             public void onConnectionStateChange(String toyId, int status, int newState) { }
 
             @Override
-            public void onResultToyData(String toyId, Toy toy) { }
+            public void onResultToyData(String toyId, Toy toy) { }  // 玩具参数回调
 
             @Override
-            public void onResultBattery(String toyId, int battery) { }
+            public void onResultBattery(String toyId, int battery) { }  //电量回调
 
             @Override
-            public void onResultAidLightStatus(String toyId, Integer status) { }
+            public void onResultAidLightStatus(String toyId, Integer status) { }  // 辅助灯状态回调
 
             @Override
-            public void onResultLightStatus(String toyId, Integer status) { }
+            public void onResultLightStatus(String toyId, Integer status) { } // 指示灯状态回调
 
             @Override
-            public void notifityToyCharacteristic(String toyId, String value) { }
+            public void notifityToyCharacteristic(String toyId, String value) { }  // 其他信息回调
 
             @Override
-            public void onOrderNotificationSuccess(String toyId) { }
+            public void onOrderNotificationSuccess(String toyId) { }  // 指令发送成功回调
 
             @Override
-            public void onOrderNotificationError(String error) { }
+            public void onOrderNotificationError(String error) { }  // 指令错误（无法识别）回调
 
             @Override
-            public void onGetAllExistedProgramSuccess(String programs) { }
+            public void onGetAllExistedProgramSuccess(String programs) { }  // 获取指令列表成功回调
 
             @Override
-            public void onResultMoveWaggleSuccess(String msg) { }
+            public void onResultMoveWaggleSuccess(String msg) { }  // 震动信息回调
 
             @Override
-            public void onError(String msg) { }
+            public void onError(LovenseError error);  { }  // 错误信息回调
         });
 
-       ```
+   ```
   * Search the toys over Bluetooth
     ```java
         Lovense.getInstance(getApplication()).scanDevice(true);
     ```
- * stop scan the toys 
+ * stop Search the toys 
     ```java
         Lovense.getInstance(getApplication()).scanDevice(false);
     ```
+ * Save the toys
+    ```java
+        Lovense.getInstance(getApplication()).saveToys(lovenseToys, new OnErrorListener());
+    ```
+ * Retrieve the saved toys
+   ```java
+        Lovense.getInstance(getApplication()).listToys(new OnErrorListener());
+    ```
  * Connect the toy
    ```java
-         Lovense.getInstance(getApplication()).requestConnect(address,new LovenseConnectCallBack());
+         Lovense.getInstance(getApplication()).requestConnect(address,new OnConnectListener());
     ```
  * Disconnect the toy
     ```java
-         Lovense.getInstance(getApplication()).disconnect(address, new LovenseDisConnectCallBack());
+         Lovense.getInstance(getApplication()).disconnect(address);
     ```
  *  Send a command to the toy
     ```java
@@ -210,43 +212,6 @@
   `COMMAND_STOP_MOVE`
   `-Stop tracking the toy movement`
   
- ### 6、 ** callback list**
-  * LovenseScanCallBack(): scan callback
-    ```java
-      void foundDevice(Toy device);
-      void finishScaning();
-      void onError(String msg);
-    ```
-    <br/>
-  * LovenseConnectCallBack(): conect callback
-    ```java
-      void onConnected(String address); // 连接成功回调
-      void onError(String msg); // 连接错误回调
-      void onServiceDiscover(String address); // 服务准备完成回调
-    ```
-     <br/>
-  * LovenseDisConnectCallBack(): disConect callback
-     ```java
-      void disConnected(String address, int status); // 断开连接回调
-     ```
-    <br/>
-  * LovenseCommandCallBack(): command callback
-     ```java
-      void notify(String toyId, String uuid, boolean started); // Notification state changed!   true:Start Notify state  false:Stop Notify state
-      void writeResult(String toyId, int status); // 命令发送完成回调
-      void requestFailed(String toyId, int ordinal);// 命令发送请求失败
-      void onConnectionStateChange(String address, int status, int newState); // 连接状态变更回调  status:0 成功执行连接操作  newState 当前设备的连接状态，0 设备已断开 1:设备正在连接 2：设备已连接 3：设备正在断开
-      void onResultToyData(String toyId,Toy toy); // 玩具参数回调
-      void onResultBattery(String toyId, int battery); //电量回调
-      void onResultAidLightStatus(String toyId, Integer status); // 辅助灯状态回调
-      void onResultLightStatus(String toyId, Integer status); // 指示灯状态回调
-      void notifityToyCharacteristic(String toyId, String value); // 其他信息回调
-      void onOrderNotificationSuccess(String toyId); // 指令发送成功回调
-      void onOrderNotificationError(String error); // 指令错误（无法识别）回调
-      void onGetAllExistedProgramSuccess(String programs); // 获取指令列表成功回调
-      void onResultMoveWaggleSuccess(String msg); // 震动信息回调
-      void onError(String msg); // 错误信息回调
-    ```
  ### 7、 ** entity class **
    * LovnseToy 玩具类，记录玩具所有属性（如玩具名称，玩具类型等）
      ```java
